@@ -22,4 +22,4 @@ pre-alpha instructions
 
 # Authors
 * Kathryn Lybarger
-* MLE Slone
+* MLE Slone (current maintainer)
