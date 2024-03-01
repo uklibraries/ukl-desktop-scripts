@@ -1,0 +1,57 @@
+#!/bin/bash
+# bagify - Good-enough BagIt compliance
+# Run this from the bag directory.
+
+TAGFILES="bagit.txt bag-info.txt"
+ALGOS="sha256 md5"
+
+# Convenience function for tracking progress of the bagging
+function say {
+    message=$1
+    now=$(date --rfc-3339=second)
+    echo "($now): $message"
+}
+
+say  "Creating a bag in $(readlink -f .)"
+
+# 2.1.1.  Bag Declaration: bagit.txt [REQUIRED]
+say  "Creating bagit.txt"
+echo "BagIt-Version: 0.97"                 > bagit.txt
+echo "Tag-File-Character-Encoding: UTF-8" >> bagit.txt
+
+# 2.2.2.  Bag Metadata: bag-info.txt [OPTIONAL]
+say  "Creating bag-info.txt"
+echo "Bagging-Date: $(date -I)"                  > bag-info.txt
+echo "Bag-Software-Agent: bagify (bash script)" >> bag-info.txt
+
+# 2.1.2.  Payload Directory: data/ [REQUIRED]
+# It is the caller's responsibility to ensure this exists.
+
+# 2.1.3.  Payload Manifest: manifest-<alg>.txt [REQUIRED]
+
+say  "Creating payload manifest(s)"
+for algo in $ALGOS; do
+    cmd="${algo}sum"
+    mft="manifest-${algo}.txt"
+    say  "* Creating manifest file $mft"
+    find data -type f -print0 | xargs -0 -n 1 $cmd -t > $mft
+done
+
+# 2.2.1.  Tag Manifest: tagmanifest-<alg>.txt [OPTIONAL]
+
+say  "Creating tag manifest(s)"
+for algo in $ALGOS; do
+    cmd="${algo}sum"
+    tagmft="tagmanifest-${algo}.txt"
+    say  "* Creating tag manifest file $tagmft"
+    truncate -s 0 $tagmft
+    for file in $TAGFILES; do
+        $cmd -t $file >> $tagmft
+    done
+    for subalgo in $ALGOS; do
+        mft="manifest-${subalgo}.txt"
+        $cmd -t $mft >> $tagmft
+    done
+done
+
+say  "Done."

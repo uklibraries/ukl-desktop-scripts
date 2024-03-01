@@ -1,0 +1,7 @@
+#!/bin/bash
+USERNAME=mps
+HOST=nyx.uky.edu
+DIR=/opt/pdp/services/apps/misc/yggdrasil/logs/output
+LOCALDIR=/cygdrive/c/local
+
+rsync -avPO "$USERNAME@$HOST:$DIR/{aips,dips}.csv" "$LOCALDIR"

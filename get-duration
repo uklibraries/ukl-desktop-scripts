@@ -1,0 +1,3 @@
+#!/bin/bash
+file=$1
+ffprobe -i "$file" -show_entries format=duration -sexagesimal -v quiet -of csv="p=0" | perl -pe 's/\..*//'

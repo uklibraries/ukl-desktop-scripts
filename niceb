@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+
+@affixes = qw{B KB MB GB TB};
+$maxpos = 4;
+
+while (<>) {
+    chomp;
+    @pieces = split(/\s+/, $_);
+    $b = $pieces[0];
+    $c = $b;
+    $pos = 0;
+    while (($c > 1000) && ($pos < $maxpos)) {
+        $c /= 1000.0;
+        $pos++;
+    }
+    print sprintf("%.2f", $c) . ' ' . $affixes[$pos] . "\n";
+}

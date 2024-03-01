@@ -1,0 +1,7 @@
+#!/bin/bash
+SRC=$1
+DIP_ID=$2
+DIP_DIR=/opt/shares/library_dips_2/test_dips/$(xtpath "$DIP_ID")
+echo $DIP_DIR
+ssh mps@nyx "mkdir -p $DIP_DIR"
+rsync -avPOK "$SRC/" "mps@nyx:$DIP_DIR"

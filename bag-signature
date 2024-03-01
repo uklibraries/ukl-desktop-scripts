@@ -1,0 +1,9 @@
+#!/bin/bash
+# bag-signature
+
+BAG_PATH=$1
+
+cd "$BAG_PATH"
+#sha256sum -t *.txt | sort
+#echo
+sha256sum -t *.txt | grep -v log | sort | sha256sum -t -

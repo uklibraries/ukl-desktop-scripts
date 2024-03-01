@@ -1,0 +1,13 @@
+#!/bin/bash
+xml=$1
+base=$(basename "$xml" .xml)
+username=mps
+host=moros
+gussy=/tmpdir/services/gussy
+
+rsync -avPO "$xml" "$username@$host:$gussy/data"
+ssh "$username@$host" <<ENDSSH
+cd "$gussy"
+ruby gussy.rb "data/$base.xml"
+ENDSSH
+rsync -rvPO "$username@$host:$gussy/$base.{json,sh,txt}" .

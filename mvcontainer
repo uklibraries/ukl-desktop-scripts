@@ -1,0 +1,146 @@
+#!/bin/bash
+# 
+# $Id: mvcontainer 1424 2009-03-09 20:17:56Z mps $
+
+usage()
+{
+  prog=`basename $0`
+  echo "Usage: $prog <container> <destination>"
+}
+
+helpu()
+{
+prog=`basename $0`
+cat <<HELPU
+Help for $prog:
+This program moves a container from one location to another, usually
+from one of the storage arrays to another one.  Currently, the user
+is responsible for ensuring that nobody is using the container.  You
+have been warned!
+
+The program takes the container name and the destination directory
+as arguments.
+
+  $prog <container> <destination>
+
+Example:
+
+  $prog drf_19430501-19430524 /mnt/storage5/root-expansion/DRF
+
+HELPU
+}
+
+main()
+{
+  case "$1" in
+    "")
+      usage
+      exit;;
+    "-h" | "--help") 
+      helpu
+      exit;;
+  esac
+
+  if [ "$#" != "2" ]; then
+    usage
+    exit
+  fi
+
+  container=$1
+  destdir=$2
+
+  get_container_path $1 # sets $container_path and fixes $container
+
+  echo "Did you remember to make sure nobody was using $container?"
+  wait_for_yes
+
+  pushd $container_path
+  destcontainer=$destdir/$container
+  rsync -avPO --no-p $container/ $destcontainer/
+  offer_to_rerun_rsync $container/ $destcontainer/
+
+  oldcontainer=${container}-old
+  echo "Moving $container to $oldcontainer"
+  mv $container $oldcontainer
+  echo "Symlinking the rsync'd copy"
+  ln -s $destcontainer .
+
+  echo ""
+  echo "I am a dumb computer program -- please verify that everything is okay."
+  echo "For example, you might browse $container from Explorer."
+  echo "Let me know when you're done.  (If things are broken, kill this program.)"
+  wait_for_yes
+
+  echo "Trying to remove $oldcontainer..."
+  rm -rf $oldcontainer
+
+  echo "rm says: $?.  I haven't been programmed to know if this is a good thing."
+  popd
+
+  echo "Exiting now"
+}
+
+# add routines here
+
+get_container_path()
+{
+  input_container=$1
+  input_dirname=`dirname $input_container`
+  pushd $input_dirname >/dev/null 
+  container_path=`echo \`pwd\``
+  popd >/dev/null
+  container=`basename $input_container`
+}
+
+offer_to_rerun_rsync()
+{
+  src=$1
+  tgt=$2
+
+  yes="Yes"
+  no="No"
+
+  prompt="Rerun rsync [$yes/$no, no default]? "
+  echo $prompt
+
+  understood=0
+
+  while [ $understood == "0" ]; do
+    read yesno
+    echo ""
+    case $yesno in
+      $yes)
+        understood=1
+	echo "Okay, rerunning rsync"
+        rsync -av $src $tgt
+	offer_to_rerun_rsync $src $tgt
+	;;
+      $no)
+        understood=1
+	echo "Okay, proceeding to next step"
+	;;
+      *)
+        echo "Please enter "$yes" or "$no".  $prompt"
+    esac
+  done
+}
+
+wait_for_yes()
+{
+  flag=1
+  password="Yes"
+
+  echo "Please enter the string \"$password\" to continue."
+  while [ $flag -gt 0 ]; do
+    read ANSWER
+
+    if [ $ANSWER == $password ]; then
+      flag=0
+    else
+      echo ""
+      echo "I don't accept \"y\", \"Y\", \"yes\", or anything but \"$password\"."
+    fi
+  done
+}
+
+main $@

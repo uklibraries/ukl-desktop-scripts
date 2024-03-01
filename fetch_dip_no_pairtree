@@ -1,0 +1,7 @@
+#!/bin/bash
+dip_id=$1 # xt73tx351r9h
+target=$2
+path=$(xtpath $dip_id)
+mkdir -p "$target"
+#rsync -avPO mps@nyx.uky.edu:/opt/shares/library_dips_1/$path/ "$target"
+rsync -rvPO mps@hypnos.uky.edu:/opt/shares/library_dips_1/$path/ "$target"

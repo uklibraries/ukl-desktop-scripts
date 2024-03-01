@@ -1,0 +1,4 @@
+#!/bin/bash
+batch=$1
+cd /cygdrive/t/ink_to_internet/3_ink_import_request
+rsync -avPO "mps@hypnos:/opt/shares/library_mips_1/exploreuk/scripto_batches/$batch" .

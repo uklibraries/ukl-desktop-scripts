@@ -1,0 +1,104 @@
+#!/usr/bin/env ruby
+
+require 'find'
+require 'json'
+
+def freshtar(count)
+  {
+    'count' => count,
+    'size' => 0,
+    'files' => [],
+  }.dup
+end
+
+max_command_length = 3000
+limit = ARGV[0].to_i
+ARGV.shift
+output = ARGV[0]
+ARGV.shift
+prefix = ARGV[0]
+ARGV.shift
+files = *ARGV
+
+tars = []
+count = 1
+tar = freshtar(count)
+
+while files.count > 0
+  file = files.shift
+  if file
+    if File.file?(file)
+      size = File.size(file)
+      if tar['size'] + size > limit
+        puts "Tar file #{tar['count']} is full - #{tar['size']} bytes, #{tar['files'].count} files"
+        tars << tar.dup
+        count += 1
+        tar = freshtar(count)
+      end
+      tar['size'] += size
+      tar['files'] << file
+    elsif File.directory?(file)
+      puts "* Descending into #{file}"
+      Find.find(file) do |path|
+        if File.file?(path)
+          size = File.size(path)
+          if tar['size'] + size > limit
+            puts "Tar path #{tar['count']} is full - #{tar['size']} bytes, #{tar['files'].count} files"
+            tars << tar.dup
+            count += 1
+            tar = freshtar(count)
+          end
+          tar['size'] += size
+          tar['files'] << path
+        end
+      end
+    end
+  else
+    puts "file is nil"
+  end
+end
+
+puts "No more files -- final tar #{tar['count']} is complete - #{tar['size']} bytes, #{tar['files'].count} files"
+tars << tar.dup
+
+File.open(output, 'w') do |f|
+  f.write("#!/bin/sh\n")
+  tars.each do |tar|
+    puts tar['count']
+    file = sprintf("#{prefix}_%04d.tar", tar['count'])
+
+    # begin tar
+    command = "tar cf #{file}"
+    full = false
+    while not full
+      if tar['files'].count == 0
+        full = true
+      elsif command.length + 5 + tar['files'].first.length < max_command_length
+        command += " \"#{tar['files'].shift}\""
+      else
+        full = true
+      end
+    end
+    f.write("\necho #{command}\n")
+    f.write("#{command}\n")
+    puts command
+
+    # remaining files
+    while tar['files'].count > 0
+      command = "tar --append --file=#{file}"
+      full = false
+      while not full
+        if tar['files'].count == 0
+          full = true
+        elsif command.length + 5 + tar['files'].first.length < max_command_length
+          command += " \"#{tar['files'].shift}\""
+        else
+          full = true
+        end
+      end
+      f.write("\necho #{command}\n")
+      f.write("#{command}\n")
+      puts command
+    end
+  end
+end

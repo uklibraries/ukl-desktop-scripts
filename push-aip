@@ -1,0 +1,11 @@
+#!/bin/bash
+SRC=$1
+AIP_ID=$2
+AIP_DIR=/opt/shares/library_aips_1/$(xtpath "$AIP_ID")
+echo $AIP_DIR
+ssh mps@hypnos "mkdir -p $AIP_DIR"
+rsync -avPOK "$SRC/" "mps@hypnos:$AIP_DIR"
+echo "Normalizing permissions"
+ssh mps@hypnos "cd $AIP_DIR; find . -type d | xargs -n 1 chmod 0775; find . -type f | xargs -n 1 chmod 0664"
+echo "AIP = $AIP_ID"
+bag-signature "$SRC"

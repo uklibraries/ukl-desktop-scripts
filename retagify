@@ -1,0 +1,3 @@
+#!/bin/bash
+md5sum -t bag* man* > tagmanifest-md5.txt
+sha256sum -t bag* man* > tagmanifest-sha256.txt

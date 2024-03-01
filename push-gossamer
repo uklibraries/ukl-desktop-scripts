@@ -1,0 +1,2 @@
+#!/bin/bash
+rsync -avPO /cygdrive/c/local2/IdeaProjects/Gossamer/src/gossamer/ mps@nyx.uky.edu:/opt/pdp/services/src/Gossamer/src/gossamer

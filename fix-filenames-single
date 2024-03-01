@@ -1,0 +1,25 @@
+#!/bin/bash
+# Put this in your scripts directory.
+#
+# This is called automatically by fix-filenames, and you shouldn't need to run it.
+#
+#    fix-filenames-single <directory> <dryrun>
+#
+# A dryrun argument of 0 means: DO IT.
+# Any other dryrun argument means: show what would be changed.
+#
+DRYRUN=$1
+shift
+SOURCE=$1
+TARGET=$(echo $SOURCE | perl -pe 's/[^A-Za-z0-9\-_\.\n\/]/_/g; s/_+/_/g; s/_+$//;')
+
+if [[ "$SOURCE" = "$TARGET" ]]; then
+    exit
+fi
+
+if [[ "$DRYRUN" = "0" ]]; then
+    mkdir -p $(dirname "$TARGET")
+    mv -i -v "$SOURCE" "$TARGET"
+else
+    echo "\"$SOURCE\" -> \"$TARGET\""
+fi

@@ -1,0 +1,15 @@
+#!/bin/bash
+SRC=$1
+TGT="${SRC}_copy"
+
+rsync -avPO "$SRC/" "$TGT"
+
+echo "Moving METS"
+cd "$TGT"
+mv "data/$SRC/mets.xml" data/mets.xml
+
+
+echo "Updating bag"
+grep -v "mets.xml" "../$SRC/manifest-sha256.txt" > manifest-sha256.txt
+sha256sum -t data/mets.xml >> manifest-sha256.txt
+sha256sum -t bagit.txt bag-info.txt manifest-sha256.txt > tagmanifest-sha256.txt

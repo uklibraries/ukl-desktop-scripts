@@ -1,0 +1,6 @@
+#!/bin/bash
+offset=$1
+count=$2
+file=$3
+let "offset = $offset + 1"
+tail -n +"$offset" "$file" | head -n "$count"

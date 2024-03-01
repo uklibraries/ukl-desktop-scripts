@@ -1,0 +1,5 @@
+#!/bin/bash
+label=$1
+mkdir -p "/cygdrive/t/mps/$label"
+cd "/cygdrive/t/mps/$label"
+rsync -rvPO /cygdrive/t/mps/who-checks-the-checksums/ .

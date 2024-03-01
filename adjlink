@@ -1,0 +1,17 @@
+#!/bin/bash
+# adjlink -- avoid double redirect
+# $Id: adjlink 568 2008-08-28 15:07:41Z mps $
+
+SYM=$1
+MID=`readlink $SYM`
+NEWT=`readlink \`readlink $SYM\``
+
+# we assume paths are relative
+echo "[$SYM -> $MID -> $NEWT]"
+echo "[removing symlink $SYM]"
+rm $SYM
+echo "[recreating symlink $SYM -> $NEWT]"
+ln -s $NEWT ./
+
+# ultimately we ought to clear out $MID
+# but we don't know that it doesn't have other clients

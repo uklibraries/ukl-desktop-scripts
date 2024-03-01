@@ -1,0 +1,90 @@
+#!/bin/bash
+# avoid_double_redirect
+# $Id: avoid_double_redirect 282 2008-07-03 22:58:28Z mps $
+
+usage()
+{
+  prog=`basename $0`
+  echo "Usage: $prog <file>"
+}
+
+helpu()
+{
+prog=`basename $0`
+cat <<HELPU
+Help for $prog:
+This program checks whether <file> is a double redirect, that is,
+a symbolic link to a symbolic link.  A double redirect is fixed
+to point to the target of the second symbolic link.
+
+HELPU
+}
+
+main()
+{
+  case "$1" in
+    "")
+      usage
+      exit;;
+    "-h" | "--help") 
+      helpu
+      exit;;
+  esac
+
+  # just in case, set proper execution path
+  #/bin/bash //libdpsrv1.uky.edu/storage/logs/export_path.sh
+
+  if [ ! -e $1 ]; then
+    echo "$1 does not exist"
+    exit
+  fi
+
+  get_full_name $1 # sets $output
+  first=$output
+  
+  if [ -L $first ]; then
+    second=`readlink $first`
+
+    if [ ! -e $second ]; then
+      echo "$second does not exist"
+    else
+      get_full_name $second
+      second=$output
+
+      if [ $first == $second ]; then
+        echo "$first points to itself"
+      else
+        third=`readlink $second`
+
+	if [ ! -e $third ]; then
+	  echo "$third does not exist"
+	else
+	  get_full_name $third
+	  third=$output
+
+	  if [ $second == $third ]; then
+	    echo "$first is not a double redirect"
+	  else
+	    echo "$first -> $second -> $third, fixing"
+	    # do stuff
+	    echo "Uh-oh, fix not implemented yet"
+	  fi
+	fi
+      fi
+    fi
+  fi
+}
+
+# add routines here
+
+get_full_name()
+{
+  input=$1
+  dirn=`dirname $input` 
+  # dagnabbit
+  pushd $dirn &> /dev/null
+  output=`echo \`pwd\`` 
+  popd $dirn &> /dev/null
+}
+
+main $@

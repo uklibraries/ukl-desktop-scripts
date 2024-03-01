@@ -1,0 +1,3 @@
+#!/bin/bash
+EAD=$1
+rsync -avPO "$EAD" mps@nyx:/opt/pdp/services/src/gussy/data

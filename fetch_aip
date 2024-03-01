@@ -1,0 +1,6 @@
+#!/bin/bash
+aip_id=$1 # xt73tx351r9h
+target=$2
+path=$(xtpath $aip_id)
+mkdir -p "$target/$path"
+rsync -avPO mps@nyx.uky.edu:/opt/shares/library_aips_1/$path/ "$target/$path"

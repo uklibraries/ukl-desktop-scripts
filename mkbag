@@ -1,0 +1,5 @@
+#!/bin/bash
+BAG=$1
+
+mkdir -p $BAG/data
+touch $BAG/data/foo.txt

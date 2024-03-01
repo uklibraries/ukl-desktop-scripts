@@ -1,0 +1,30 @@
+#!/bin/bash
+# tif2jpeg
+# $Id: tif2jpeg 1981 2009-06-15 17:02:52Z mps $
+
+target=$1
+
+case $target in
+    "")
+        echo "Usage:   tif2jpeg <directory>"
+        echo "Example: tif2jpeg /ringo/mps/maps/Metcalfe"
+        exit;
+esac
+
+# make sure there's not already jpegs there
+count=`ls -1 $target/*.jpg 2>/dev/null | wc -l`
+
+case $count in
+    "0")
+        for tif in `ls -1 $target/*.tif 2>/dev/null`; do
+            tif=`basename $tif`
+            file=`basename $tif .tif`
+            jpg="$file.jpg"
+            echo "Converting $tif -> $jpg"
+            convert $target/$tif $target/$jpg
+        done
+        exit;
+esac
+
+echo "There are already jpegs in this directory.  Please move them out of the way."
+exit;

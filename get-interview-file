@@ -1,0 +1,33 @@
+#!/bin/bash
+path=$1
+cd "$path"
+file="None"
+exts="mp4 MP4 mkv MKV mov MOV m4v M4V wav WAV mp3 MP3 m4a M4A"
+
+function look_here_for_file {
+    for ext in $exts; do
+        count=$(find . -not -path '*/\.*' -name "*.$ext" -print0 | xargs -0 -n 1 readlink -f 2>/dev/null | wc -l)
+        if [[ "$count" != "0" ]]; then
+            file=$(find .  -not -path '*/\.*' -name "*.$ext" -print0 | xargs -0 -n 1 readlink -f 2>/dev/null | head -n 1)
+            break
+        fi
+    done
+}
+
+look_here_for_file
+
+if [[ ("$file" == "None") && (-e data) && (-e bagit.txt) ]]; then
+    cd data
+    look_here_for_file
+fi
+
+if [[ ("$file" == "None") && (-e master) ]]; then
+    cd master
+    look_here_for_file
+fi
+
+if [[ "$file" != "None" ]]; then
+    echo "$file"
+else
+    echo "None"
+fi

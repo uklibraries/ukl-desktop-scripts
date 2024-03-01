@@ -1,0 +1,4 @@
+#!/bin/bash
+rsync -avPO --no-p --no-g --chmod=ugo=rwX $@
+#rsync -av --chmod=0775 $@
+#rsync -avz --no-p --no-g --chmod=ug=rwx --chmod=o=rx -e ssh $@

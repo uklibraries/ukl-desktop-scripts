@@ -1,0 +1,55 @@
+#!/bin/bash
+dir=$1
+if [[ "$dir" = "" ]]; then
+    dir="."
+fi
+cd "$dir"
+errors=()
+found="found.txt"
+manifested="manifested.txt"
+find data -type f | tr -d '\r' | sort > "$found"
+for alg in md5 sha1 sha256; do
+    mft="manifest-${alg}.txt"
+    util="${alg}sum"
+    if [ -f "$mft" ]; then
+        echo "Checking that all files are manifested in $mft"
+        awk '{print $2}' "$mft" | tr -d '\r' | sort > "$manifested"
+        missing=$(comm -23 "$found" "$manifested" | wc -l)
+        if [[ "$missing" -gt "0" ]]; then
+            msg="not ok, $missing files are not manifested in $mft"
+            errors+="$msg"
+            echo "$msg"
+        fi
+        rm -f "$manifested"
+
+        echo "Checking $alg fixity"
+        while read expected file; do
+            file=$(echo "$file" | tr -d '\r' | tr -d '\n')
+            if [ ! -f "$file" ]; then
+            ls -l | grep $file
+                msg="not ok missing $file"
+                errors+="$msg"
+                echo "$msg"
+            else
+                got=$("$util" "$file" | awk '{print $1}')
+                if [[ "$expected" = "$got" ]]; then
+                    echo "ok $file"
+                else
+                    msg="not ok $file $alg checksum, expected $expected but got $got"
+                    errors+="$msg"
+                    echo "$msg"
+                fi
+            fi
+        done < "$mft"
+    fi
+done
+rm -f "$found"
+if [ -z "$errors" ]; then
+    echo "The bag $dir is valid."
+    exit
+fi
+echo "Errors found."
+#for error in $errors; do
+#    echo "$error"
+#done
+echo "The bag $dir is NOT valid."

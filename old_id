@@ -1,0 +1,6 @@
+#!/bin/bash
+SERVER=http://nyx.uky.edu/identity/16417
+DIP_ID=$1
+# fetch old id
+OLD_ID=`curl $SERVER/$DIP_ID/old_id/ 2>/dev/null | perl -ne 'if (m#old_id: (\w+)#) { print "$1\n"; }'`
+echo $OLD_ID
