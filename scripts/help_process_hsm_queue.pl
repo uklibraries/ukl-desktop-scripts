@@ -142,7 +142,7 @@ sub printable_version {
 
 sub hsmgo {
 
-    my $url = 'http://hpc.uky.edu/Stats/HSM/';
+    my $url = 'https://exploreuk.uky.edu/hsm-stats/';
 
     open my $in, '-|', "curl $url 2>/dev/null"
         or croak("can't open $url: $!");
